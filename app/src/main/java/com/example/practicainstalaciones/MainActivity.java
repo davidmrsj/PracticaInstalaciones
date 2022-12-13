@@ -7,6 +7,7 @@ import androidx.activity.result.contract.ActivityResultContract;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.AlarmManager;
 import android.app.PendingIntent;
@@ -69,6 +70,7 @@ public class MainActivity extends AppCompatActivity {
 
         preferences = getSharedPreferences("credenciales", Context.MODE_PRIVATE);
         editor = preferences.edit();
+
         String user = preferences.getString("user", "");
         Toast toast = Toast.makeText(getApplicationContext(), user, Toast.LENGTH_LONG);
         toast.show();
@@ -80,6 +82,17 @@ public class MainActivity extends AppCompatActivity {
         creandoBaseDatos();
         insertarInstalaciones();
 
+    }
+
+    @SuppressLint("MissingSuperCall")
+    @Override
+    protected void onStart() {
+        super.onStart();
+        String user = preferences.getString("user", "");
+        if (user != "") {
+            Intent intent = new Intent(getApplicationContext(), Reservas.class);
+            startActivity(intent);
+        }
     }
 
     public void creandoBaseDatos(){

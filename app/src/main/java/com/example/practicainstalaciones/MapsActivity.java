@@ -2,6 +2,7 @@ package com.example.practicainstalaciones;
 
 import static com.example.practicainstalaciones.MainActivity.db;
 
+import androidx.annotation.NonNull;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.FragmentActivity;
@@ -29,6 +30,7 @@ import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.example.practicainstalaciones.databinding.ActivityMapsBinding;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
 
 import java.io.Console;
 
@@ -38,7 +40,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     private ActivityMapsBinding binding;
     Marker ubicaciones[];
     LatLng puntoInicial;
-
+    Location currentLocation;
+    FusedLocationProviderClient fusedLocationProviderClient;
+    private static final int REQUEST_CODE=101;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,6 +55,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
+
+        fusedLocationProviderClient=LocationServices.getFusedLocationProviderClient(this);
+        getCurrentLocation();
 
     }
 
@@ -69,26 +76,51 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         añadirUbicaciones(googleMap);
         // Add a marker in Sydney and move the camera
-        puntoInicial = new LatLng(41.64500002443547, -4.733675318032789);
+        puntoInicial = new LatLng(currentLocation.getLatitude(), -currentLocation.getLongitude());
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(puntoInicial, 13));
         mMap.setMapType(GoogleMap.MAP_TYPE_NORMAL);
         mMap.getUiSettings().setZoomControlsEnabled(true);
         mMap.setOnInfoWindowClickListener(this);
 
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            // TODO: Consider calling
-            //    ActivityCompat#requestPermissions
-            // here to request the missing permissions, and then overriding
-            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-            //                                          int[] grantResults)
-            // to handle the case where the user grants the permission. See the documentation
-            // for ActivityCompat#requestPermissions for more details.
-            return;
-        }
-        mMap.setMyLocationEnabled(true);
 
 
     }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+        switch (REQUEST_CODE){
+            case REQUEST_CODE:
+                if(grantResults.length>0 && grantResults[0]==PackageManager.PERMISSION_GRANTED){
+                    getCurrentLocation();
+                }
+                break;
+        }
+    }
+
+    private void getCurrentLocation(){
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED
+                && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION)!= PackageManager.PERMISSION_GRANTED){
+
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}
+            , REQUEST_CODE);
+        }
+
+        Task<Location> task=fusedLocationProviderClient.getLastLocation();
+        task.addOnSuccessListener(new OnSuccessListener<Location>() {
+            @Override
+            public void onSuccess(Location location) {
+                if(location!=null){
+                    currentLocation=location;
+                    Toast.makeText(getApplicationContext(), (int)currentLocation.getLatitude(), Toast.LENGTH_LONG).show();
+                    SupportMapFragment supportMapFragment=(SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
+                    assert supportMapFragment !=null;
+                    supportMapFragment.getMapAsync(MapsActivity.this);
+                }
+            }
+        });
+    }
+
 
     public void añadirUbicaciones(GoogleMap googleMap){
         mMap = googleMap;
