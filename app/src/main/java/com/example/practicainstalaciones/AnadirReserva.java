@@ -1,6 +1,7 @@
 package com.example.practicainstalaciones;
 
 import static com.example.practicainstalaciones.MainActivity.db;
+import static com.example.practicainstalaciones.MainActivity.preferences;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -65,6 +66,7 @@ public class AnadirReserva extends AppCompatActivity implements AdapterView.OnIt
         hora = calendario.get(Calendar.HOUR_OF_DAY);
         minuto = calendario.get(Calendar.MINUTE);
         car = Calendar.getInstance();
+        fecha=ano+"-"+mes+"-"+dia;
 
         spinnerTipo.setOnItemSelectedListener(this);
         rellenarSpinnerNumeros();
@@ -78,7 +80,7 @@ public class AnadirReserva extends AppCompatActivity implements AdapterView.OnIt
         DatePickerDialog datePickerDialog = new DatePickerDialog(this, new DatePickerDialog.OnDateSetListener() {
             @Override
             public void onDateSet(DatePicker view, int year, int month, int dayOfMonth) {
-                fecha = year+"-"+month+"-"+dayOfMonth+" ";
+                fecha = year+"-"+month+"-"+dayOfMonth;
                 car.set(Calendar.YEAR, year);
                 car.set(Calendar.MONTH, month);
                 car.set(Calendar.DAY_OF_MONTH, dayOfMonth);
@@ -107,7 +109,7 @@ public class AnadirReserva extends AppCompatActivity implements AdapterView.OnIt
         if(bundle!=null){
             String instalacion = bundle.getString("Nombre");
             Log.e("Instalacionm", instalacion);
-            String tipo = bundle.getString("Tipo pista");
+
             for (int i =0; i<nameInstalaciones.length; i++) {
                 if(nameInstalaciones[i].contains(instalacion)) {
                     Log.e("Entra if", String.valueOf(i));
@@ -117,7 +119,7 @@ public class AnadirReserva extends AppCompatActivity implements AdapterView.OnIt
         }
     }
 
-    public void setTipoInstalacionElegidaMaps(){
+    /*public void setTipoInstalacionElegidaMaps(){
         Bundle bundle = this.getIntent().getExtras();
         if(bundle!=null){
             String tipo = bundle.getString("Tipo pista");
@@ -129,19 +131,24 @@ public class AnadirReserva extends AppCompatActivity implements AdapterView.OnIt
                 }
             }
         }
-    }
+    }*/
 
     public void anadirReserva(View view){
         String horaInicio =spinnerHoraInicio.getSelectedItem().toString();
         String horaFinal = String.valueOf(Integer.parseInt(spinnerHoraInicio.getSelectedItem().toString())+Integer.parseInt(spinner.getSelectedItem().toString()));
-        Cursor c = db.rawQuery("SELECT * FROM reserva WHERE fechaInicio=Date('"+fecha+"') AND instalacion='"+spinnerInstalaciones.getSelectedItem().toString()+"' and 15 BETWEEN horaInicio and (horaFinal-1) or 18 BETWEEN (horaInicio+1) and horaFinal;", null);
+        String user = preferences.getString("user", "");
+        Log.e("Consulta", "SELECT * FROM reserva WHERE fechaInicio=Date('"+fecha+"') AND instalacion='"+spinnerInstalaciones.getSelectedItem().toString()+"' and ("+horaInicio+" BETWEEN horaInicio and (horaFinal-1) or "+horaFinal+" BETWEEN (horaInicio+1) and horaFinal);");
+        Cursor c = db.rawQuery("SELECT * FROM reserva WHERE instalacion='"+spinnerInstalaciones.getSelectedItem().toString()+"' and fechaInicio=Date('"+fecha+"') and ("+horaInicio+" BETWEEN horaInicio and (horaFinal-1) or "+horaFinal+" BETWEEN (horaInicio+1) and horaFinal);", null);
+        while (c.moveToNext()){
+            Log.e("Resultado", c.getString(0)+" "+c.getString(1)+" "+c.getString(2)+" "+c.getString(3));
+        }
         if(c.getCount()==0){
             try {
-                db.execSQL("INSERT INTO reserva(fechaInicio, horaInicio, horaFinal, instalacion, usuario) VALUES('"+fecha+"',"+horaInicio+", "+horaFinal+" '"+MainActivity.usuarioLogeado+"')");
-                txtfech.setText("Reserva correcta");
-                setAlarm(car);
+                db.execSQL("INSERT INTO reserva(fechaInicio, horaInicio, horaFinal, instalacion, usuario) VALUES('"+fecha+"',"+horaInicio+", "+horaFinal+", '"+spinnerInstalaciones.getSelectedItem().toString()+"', '"+user+"')");
+                Toast.makeText(getApplicationContext(), "Reserva correcta", Toast.LENGTH_LONG).show();
+                //setAlarm(car);
             }catch (Exception e){
-                txtfech.setText("Error en la reserva");
+                Toast.makeText(getApplicationContext(), "Error al realizar la reserva", Toast.LENGTH_LONG).show();
             }
         }else{
             Toast.makeText(getApplicationContext(), "Esta hora esta reservada ya", Toast.LENGTH_LONG).show();
@@ -150,6 +157,13 @@ public class AnadirReserva extends AppCompatActivity implements AdapterView.OnIt
 
     public void mapaDeInstalaciones(View view){
         Intent intent = new Intent(this, MapsActivity.class);
+        startActivity(intent);
+    }
+
+    public void horasDisponibles(View view){
+        Intent intent = new Intent(this, HorasDisponibles.class);
+        intent.putExtra("Instalacion", spinnerInstalaciones.getSelectedItem().toString());
+        intent.putExtra("Fecha", fecha);
         startActivity(intent);
     }
 
@@ -172,7 +186,7 @@ public class AnadirReserva extends AppCompatActivity implements AdapterView.OnIt
             Cursor cursor = db.rawQuery("SELECT * FROM instalaciones", null);
             nameInstalaciones = new String[cursor.getCount()];
             while(cursor.moveToNext()){
-                nameInstalaciones[contador] = cursor.getString(0)+"\nPista:"+cursor.getString(3);
+                nameInstalaciones[contador] = cursor.getString(0);
                 contador++;
             }
         }catch (Exception e){
@@ -199,7 +213,6 @@ public class AnadirReserva extends AppCompatActivity implements AdapterView.OnIt
         }
         ArrayAdapter adpTipoInstalaciones = new ArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, tipoInstalaciones);
         spinnerTipo.setAdapter(adpTipoInstalaciones);
-        setTipoInstalacionElegidaMaps();
     }
 
     private void setAlarm(Calendar calendar) {
@@ -233,7 +246,7 @@ public class AnadirReserva extends AppCompatActivity implements AdapterView.OnIt
                 Cursor cursor = db.rawQuery("SELECT * FROM instalaciones where tipoinstalacion='"+parent.getSelectedItem().toString()+"'", null);
                 nameInstalaciones = new String[cursor.getCount()];
                 while(cursor.moveToNext()){
-                    nameInstalaciones[contador] = cursor.getString(0)+"\nPista:"+cursor.getString(3);
+                    nameInstalaciones[contador] = cursor.getString(0);
                     contador++;
                 }
             }catch (Exception e){
@@ -244,6 +257,8 @@ public class AnadirReserva extends AppCompatActivity implements AdapterView.OnIt
         }else{
             rellenarSpinnerNombreInstalaciones();
         }
+        String auxInstalacionName = String.valueOf(spinnerInstalaciones.getSelectedItemId());
+        Log.e("idInst", auxInstalacionName);
     }
 
     /**

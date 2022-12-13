@@ -86,12 +86,7 @@ public class MainActivity extends AppCompatActivity {
         try {
             db = openOrCreateDatabase("Reservas", Context.MODE_PRIVATE, null);
             db.execSQL("Create table if not exists usuarios(usuario varchar,contraseña varchar, primary key(usuario))");
-            db.execSQL("create table if not exists instalaciones(\n" +
-                    " nombre varchar(50) primary key,\n" +
-                    " altitud float,\n" +
-                    " latitud float,\n" +
-                    " tipoinstalacion varchar(50)\n" +
-                    " );");
+            db.execSQL("create table if not exists instalaciones(nombre varchar(50) primary key, altitud float, latitud float, tipoinstalacion varchar(50));");
             db.execSQL("create table if not exists reserva(fechaInicio timestamp, horaInicio int, horaFinal int, instalacion varchar, usuario varchar, foreign key(instalacion) references instalaciones(nombre), primary key(fechaInicio, horaInicio, instalacion), foreign key(usuario) references usuarios(usuario));");
 
         }catch (Exception e){
