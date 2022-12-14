@@ -35,12 +35,8 @@ import java.util.List;
 public class MainActivity extends AppCompatActivity {
 
     public static SQLiteDatabase db;
-    private EditText txtusuario;
-    private EditText txtContra;
     private EditText txtUsuarioLog;
     private EditText txtContraLog;
-    private TextView textoInfor;
-    private Button btnReservas;
     public static boolean usuarioLogeado=false;
     public static SharedPreferences preferences;
     public static SharedPreferences.Editor editor;
@@ -72,8 +68,11 @@ public class MainActivity extends AppCompatActivity {
         editor = preferences.edit();
 
         String user = preferences.getString("user", "");
-        Toast toast = Toast.makeText(getApplicationContext(), user, Toast.LENGTH_LONG);
-        toast.show();
+        if(user!="") {
+            Toast toast = Toast.makeText(getApplicationContext(), "Bienvenido "+user, Toast.LENGTH_LONG);
+            toast.show();
+        }
+
         if(user!=""){
             Intent intent = new Intent(getApplicationContext(), Reservas.class);
             startActivity(intent);

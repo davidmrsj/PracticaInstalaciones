@@ -27,6 +27,16 @@ public class Reservas extends AppCompatActivity {
 
     }
 
+    @Override
+    protected void onStart() {
+        super.onStart();
+        String user = preferences.getString("user", "");
+        if(user==""){
+            Intent intent = new Intent(getApplicationContext(), MainActivity.class);
+            startActivity(intent);
+        }
+    }
+
     public void anadirReserva(View view){
         Intent intent = new Intent(getApplicationContext(), AnadirReserva.class);
         startActivity(intent);
