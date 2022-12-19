@@ -69,6 +69,7 @@ public class AnadirReserva extends AppCompatActivity implements AdapterView.OnIt
         fecha=ano+"-"+mes+"-"+dia;
 
         spinnerTipo.setOnItemSelectedListener(this);
+        spinnerHoraInicio.setOnItemSelectedListener(this);
         rellenarSpinnerNumeros();
         rellenarSpinnerNombreInstalaciones();
         rellenarSpinnerTipoInstalaciones();
@@ -134,6 +135,7 @@ public class AnadirReserva extends AppCompatActivity implements AdapterView.OnIt
     }*/
 
     public void anadirReserva(View view){
+
         String horaInicio =spinnerHoraInicio.getSelectedItem().toString();
         String horaFinal = String.valueOf(Integer.parseInt(spinnerHoraInicio.getSelectedItem().toString())+Integer.parseInt(spinner.getSelectedItem().toString()));
         String user = preferences.getString("user", "");
@@ -143,12 +145,17 @@ public class AnadirReserva extends AppCompatActivity implements AdapterView.OnIt
             Log.e("Resultado", c.getString(0)+" "+c.getString(1)+" "+c.getString(2)+" "+c.getString(3));
         }
         if(c.getCount()==0){
+            if(Integer.parseInt(horaFinal)>20){
+                Toast.makeText(getApplicationContext(), "No se pueden reservar horas a partir de las 20", Toast.LENGTH_LONG).show();
+            }else{
             try {
                 db.execSQL("INSERT INTO reserva(fechaInicio, horaInicio, horaFinal, instalacion, usuario) VALUES('"+fecha+"',"+horaInicio+", "+horaFinal+", '"+spinnerInstalaciones.getSelectedItem().toString()+"', '"+user+"')");
                 Toast.makeText(getApplicationContext(), "Reserva correcta", Toast.LENGTH_LONG).show();
-                //setAlarm(car);
+                setAlarm();
             }catch (Exception e){
+                Log.e("Añadir reserva", e.getMessage());
                 Toast.makeText(getApplicationContext(), "Error al realizar la reserva", Toast.LENGTH_LONG).show();
+            }
             }
         }else{
             Toast.makeText(getApplicationContext(), "Esta hora esta reservada ya", Toast.LENGTH_LONG).show();
@@ -215,13 +222,30 @@ public class AnadirReserva extends AppCompatActivity implements AdapterView.OnIt
         spinnerTipo.setAdapter(adpTipoInstalaciones);
     }
 
-    private void setAlarm(Calendar calendar) {
+    private void setAlarm() {
+//        AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
+//
+//        Intent intent = new Intent(this, NotificationService.class);
+//        PendingIntent pendingIntent = PendingIntent.getService(this, (int) System.currentTimeMillis(), intent, 0);
+//
+//        alarmManager.setExact(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), pendingIntent);
+
         AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
-
+        Log.e("Alarma", "Alarmanager");
         Intent intent = new Intent(this, NotificationService.class);
-        PendingIntent pendingIntent = PendingIntent.getService(this, (int) System.currentTimeMillis(), intent, 0);
+        Log.e("Alarma", "Intent");
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(this, (int)System.currentTimeMillis(), intent, PendingIntent.FLAG_IMMUTABLE);
+        Log.e("Alarma", "Manda la alarma");
+//        car.add(Calendar.HOUR_OF_DAY, Integer.parseInt(spinnerHoraInicio.getSelectedItem().toString()));
+//        Calendar fechaNotificacion = Calendar.getInstance();
+//        fechaNotificacion.setTimeInMillis(car.getTimeInMillis() - 15 * 60 * 1000);
+//        long triggerTime = fechaNotificacion.getTimeInMillis();
+        Calendar c = Calendar.getInstance();
+        c.add(Calendar.SECOND, 10);
+        long triggerTime = c.getTimeInMillis();
 
-        alarmManager.setExact(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), pendingIntent);
+        alarmManager.setExact(AlarmManager.RTC_WAKEUP, triggerTime, pendingIntent);
+        Log.e("Alarma", "Da tiempo a la alarma");
     }
 
     /**
@@ -240,25 +264,43 @@ public class AnadirReserva extends AppCompatActivity implements AdapterView.OnIt
      */
     @Override
     public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-        if(spinnerTipo.getSelectedItem().toString()!="Todos"){
-            try{
-                int contador=0;
-                Cursor cursor = db.rawQuery("SELECT * FROM instalaciones where tipoinstalacion='"+parent.getSelectedItem().toString()+"'", null);
-                nameInstalaciones = new String[cursor.getCount()];
-                while(cursor.moveToNext()){
-                    nameInstalaciones[contador] = cursor.getString(0);
-                    contador++;
-                }
-            }catch (Exception e){
-                Toast.makeText(getApplicationContext(), "Error al conseguir datos de las instalaciones", Toast.LENGTH_LONG).show();
+        if(parent.getId()==R.id.spinner5){
+            if(Integer.parseInt(parent.getSelectedItem().toString())>17){
+                String [] elementos = {"1", "2", "3"};
+                ArrayAdapter adp = new ArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, elementos) {
+                    @Override
+                    public boolean isEnabled(int position) {
+                        switch (Integer.parseInt(parent.getSelectedItem().toString())){
+                            case 18: return position!=2;
+                            case 19: return position!=1 && position!=2;
+                            case 20: return position!=0 && position!=1 && position!=2;
+                        }
+                        return false;
+                    }
+                };
+                spinner.setAdapter(adp);
             }
-            ArrayAdapter adpInstalaciones = new ArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, nameInstalaciones);
-            spinnerInstalaciones.setAdapter(adpInstalaciones);
-        }else{
-            rellenarSpinnerNombreInstalaciones();
         }
-        String auxInstalacionName = String.valueOf(spinnerInstalaciones.getSelectedItemId());
-        Log.e("idInst", auxInstalacionName);
+        if(parent.getId()==R.id.spinner4){
+            if(spinnerTipo.getSelectedItem().toString()!="Todos"){
+                try{
+                    int contador=0;
+                    Cursor cursor = db.rawQuery("SELECT * FROM instalaciones where tipoinstalacion='"+parent.getSelectedItem().toString()+"'", null);
+                    nameInstalaciones = new String[cursor.getCount()];
+                    while(cursor.moveToNext()){
+                        nameInstalaciones[contador] = cursor.getString(0);
+                        contador++;
+                    }
+                }catch (Exception e){
+                    Toast.makeText(getApplicationContext(), "Error al conseguir datos de las instalaciones", Toast.LENGTH_LONG).show();
+                }
+                ArrayAdapter adpInstalaciones = new ArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, nameInstalaciones);
+                spinnerInstalaciones.setAdapter(adpInstalaciones);
+            }else{
+                rellenarSpinnerNombreInstalaciones();
+            }
+            String auxInstalacionName = String.valueOf(spinnerInstalaciones.getSelectedItemId());
+        }
     }
 
     /**

@@ -1,20 +1,50 @@
 package com.example.practicainstalaciones;
 
 public class Reserva {
-    int id;
+    String instalacion;
+    String horaInicio;
+    String horaFinal;
+    String usuario;
     String fechaReserva;
 
-    public Reserva(int id, String fechaReserva) {
-        this.id = id;
+    public Reserva(String instalacion, String horaInicio, String horaFinal, String usuario, String fechaReserva) {
+        this.instalacion = instalacion;
+        this.horaInicio = horaInicio;
+        this.horaFinal = horaFinal;
+        this.usuario = usuario;
         this.fechaReserva = fechaReserva;
     }
 
-    public int getId() {
-        return id;
+    public String getInstalacion() {
+        return instalacion;
     }
 
-    public void setId(int id) {
-        this.id = id;
+    public void setInstalacion(String instalacion) {
+        this.instalacion = instalacion;
+    }
+
+    public String getHoraInicio() {
+        return horaInicio;
+    }
+
+    public void setHoraInicio(String horaInicio) {
+        this.horaInicio = horaInicio;
+    }
+
+    public String getHoraFinal() {
+        return horaFinal;
+    }
+
+    public void setHoraFinal(String horaFinal) {
+        this.horaFinal = horaFinal;
+    }
+
+    public String getUsuario() {
+        return usuario;
+    }
+
+    public void setUsuario(String usuario) {
+        this.usuario = usuario;
     }
 
     public String getFechaReserva() {
@@ -27,6 +57,6 @@ public class Reserva {
 
     @Override
     public String toString() {
-        return "id: " + id + "+fechaReserva: " + fechaReserva;
+        return "Instalacion: " + instalacion + "+ fechaReserva: " + fechaReserva+" horas: "+horaInicio+"-"+horaFinal;
     }
 }
