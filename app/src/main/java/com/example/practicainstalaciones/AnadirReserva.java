@@ -85,65 +85,35 @@ public class AnadirReserva extends AppCompatActivity implements AdapterView.OnIt
                 car.set(Calendar.YEAR, year);
                 car.set(Calendar.MONTH, month);
                 car.set(Calendar.DAY_OF_MONTH, dayOfMonth);
+                ano=year;
+                mes=month;
+                dia=dayOfMonth;
             }
         }, ano, mes, dia);
         datePickerDialog.getDatePicker().setMinDate(System.currentTimeMillis()-1000);
         datePickerDialog.show();
     }
 
-    /*public void recogerHora(View view){
-
-        TimePickerDialog timePickerDialog = new TimePickerDialog(this, new TimePickerDialog.OnTimeSetListener() {
-            @Override
-            public void onTimeSet(TimePicker view, int hourOfDay, int minute) {
-                hora = hourOfDay;
-                car.set(Calendar.HOUR_OF_DAY, hourOfDay);
-                car.set(Calendar.MINUTE, minute);
-                car.add(Calendar.MINUTE, -30);
-            }
-        }, hora, minuto, false);
-        timePickerDialog.show();
-    }*/
-
     public void setInstalacionElegidaMaps(){
         Bundle bundle = this.getIntent().getExtras();
         if(bundle!=null){
             String instalacion = bundle.getString("Nombre");
-            Log.e("Instalacionm", instalacion);
 
             for (int i =0; i<nameInstalaciones.length; i++) {
                 if(nameInstalaciones[i].contains(instalacion)) {
-                    Log.e("Entra if", String.valueOf(i));
                     spinnerInstalaciones.setSelection(i);
                 }
             }
         }
     }
 
-    /*public void setTipoInstalacionElegidaMaps(){
-        Bundle bundle = this.getIntent().getExtras();
-        if(bundle!=null){
-            String tipo = bundle.getString("Tipo pista");
-            Log.e("Tipo", tipo);
-            for (int i =0; i<tipoInstalaciones.length; i++) {
-                if(tipoInstalaciones[i].contains(tipo)) {
-                    Log.e("Entra if", String.valueOf(i));
-                    spinnerTipo.setSelection(i);
-                }
-            }
-        }
-    }*/
-
     public void anadirReserva(View view){
 
         String horaInicio =spinnerHoraInicio.getSelectedItem().toString();
         String horaFinal = String.valueOf(Integer.parseInt(spinnerHoraInicio.getSelectedItem().toString())+Integer.parseInt(spinner.getSelectedItem().toString()));
         String user = preferences.getString("user", "");
-        Log.e("Consulta", "SELECT * FROM reserva WHERE fechaInicio=Date('"+fecha+"') AND instalacion='"+spinnerInstalaciones.getSelectedItem().toString()+"' and ("+horaInicio+" BETWEEN horaInicio and (horaFinal-1) or "+horaFinal+" BETWEEN (horaInicio+1) and horaFinal);");
         Cursor c = db.rawQuery("SELECT * FROM reserva WHERE instalacion='"+spinnerInstalaciones.getSelectedItem().toString()+"' and fechaInicio=Date('"+fecha+"') and ("+horaInicio+" BETWEEN horaInicio and (horaFinal-1) or "+horaFinal+" BETWEEN (horaInicio+1) and horaFinal);", null);
-        while (c.moveToNext()){
-            Log.e("Resultado", c.getString(0)+" "+c.getString(1)+" "+c.getString(2)+" "+c.getString(3));
-        }
+
         if(c.getCount()==0){
             if(Integer.parseInt(horaFinal)>20){
                 Toast.makeText(getApplicationContext(), "No se pueden reservar horas a partir de las 20", Toast.LENGTH_LONG).show();
@@ -183,7 +153,6 @@ public class AnadirReserva extends AppCompatActivity implements AdapterView.OnIt
         String [] horas = {"9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19", "20"};
         ArrayAdapter adpHoras = new ArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, horas);
         spinnerHoraInicio.setAdapter(adpHoras);
-
     }
 
     public void rellenarSpinnerNombreInstalaciones(){
@@ -231,18 +200,15 @@ public class AnadirReserva extends AppCompatActivity implements AdapterView.OnIt
 //        alarmManager.setExact(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), pendingIntent);
 
         AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
-        Log.e("Alarma", "Alarmanager");
         Intent intent = new Intent(this, NotificationService.class);
-        Log.e("Alarma", "Intent");
+        intent.putExtra("Instalacion", spinnerInstalaciones.getSelectedItem().toString());
+        intent.putExtra("Hora", spinnerHoraInicio.getSelectedItem().toString());
         PendingIntent pendingIntent = PendingIntent.getBroadcast(this, (int)System.currentTimeMillis(), intent, PendingIntent.FLAG_IMMUTABLE);
-        Log.e("Alarma", "Manda la alarma");
-//        car.add(Calendar.HOUR_OF_DAY, Integer.parseInt(spinnerHoraInicio.getSelectedItem().toString()));
-//        Calendar fechaNotificacion = Calendar.getInstance();
-//        fechaNotificacion.setTimeInMillis(car.getTimeInMillis() - 15 * 60 * 1000);
-//        long triggerTime = fechaNotificacion.getTimeInMillis();
-        Calendar c = Calendar.getInstance();
-        c.add(Calendar.SECOND, 10);
-        long triggerTime = c.getTimeInMillis();
+
+        car.add(Calendar.HOUR_OF_DAY, Integer.parseInt(spinnerHoraInicio.getSelectedItem().toString()));
+        Calendar fechaNotificacion = Calendar.getInstance();
+        fechaNotificacion.setTimeInMillis(car.getTimeInMillis() - 15 * 60 * 1000);
+        long triggerTime = fechaNotificacion.getTimeInMillis();
 
         alarmManager.setExact(AlarmManager.RTC_WAKEUP, triggerTime, pendingIntent);
         Log.e("Alarma", "Da tiempo a la alarma");
