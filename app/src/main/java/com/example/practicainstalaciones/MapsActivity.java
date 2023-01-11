@@ -1,6 +1,7 @@
 package com.example.practicainstalaciones;
 
 import static com.example.practicainstalaciones.MainActivity.db;
+import static com.example.practicainstalaciones.MainActivity.preferences;
 
 import androidx.fragment.app.FragmentActivity;
 
@@ -57,6 +58,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                 .findFragmentById(R.id.map);
         mapFragment.getMapAsync(this);
 
+        actualizarUbicacion();
 
     }
 
@@ -75,9 +77,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
         //Log.e("Localizacion mia", currentLocation.toString());
         añadirUbicaciones(googleMap);
+        comprobarPermisos();
+        actualizarUbicacion();
 
-        updateLocationUI();
-        checkPermissions();
         // Add a marker in Sydney and move the camera
         puntoInicial = new LatLng(41.632027873568504, -4.758640510497422);
         mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(puntoInicial, 13));
@@ -86,11 +88,26 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         mMap.setOnInfoWindowClickListener(this);
         mMap.getUiSettings().setMyLocationButtonEnabled(true);
 
+        String user = preferences.getString("user", "");
+        if(user==""){
+            Intent intent = new Intent(getApplicationContext(), MainActivity.class);
+            startActivity(intent);
+        }
+    }
 
+    /**
+     * {@inheritDoc}
+     * <p>
+     * Dispatch onStop() to all fragments.
+     */
+    @Override
+    protected void onStop() {
+        super.onStop();
+        finish();
     }
 
     @SuppressLint("MissingPermission")
-    private void updateLocationUI() {
+    private void actualizarUbicacion() {
         if (mMap == null) {
             return;
         }
@@ -114,22 +131,22 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
         mMap.getUiSettings().setZoomControlsEnabled(true);
     }
 
-    private void checkPermissions() {
+    private void comprobarPermisos() {
         try {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                 if (checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION)
                         == PackageManager.PERMISSION_GRANTED) {
-                    getDeviceLocation();
+                    obtenerUbicacionDispositivo();
                 }
             } else {
-                getDeviceLocation();
+                obtenerUbicacionDispositivo();
             }
         } catch (SecurityException e)  {
             Log.e("Exception: %s", e.getMessage(), e);
         }
     }
 
-    private void getDeviceLocation() {
+    private void obtenerUbicacionDispositivo() {
         @SuppressLint("MissingPermission")
         Task<Location> locationResult = fusedLocationProviderClient.getLastLocation();
         locationResult.addOnCompleteListener(this, task -> {

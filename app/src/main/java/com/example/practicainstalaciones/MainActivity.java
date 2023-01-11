@@ -23,6 +23,7 @@ import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -61,6 +62,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
         txtUsuarioLog = (EditText) findViewById(R.id.editTextLogin);
         txtContraLog = (EditText) findViewById(R.id.editTextPassLogin);
 
@@ -99,7 +101,7 @@ public class MainActivity extends AppCompatActivity {
             db = openOrCreateDatabase("Reservas", Context.MODE_PRIVATE, null);
             db.execSQL("Create table if not exists usuarios(usuario varchar,contraseña varchar, primary key(usuario))");
             db.execSQL("create table if not exists instalaciones(nombre varchar(50) primary key, altitud float, latitud float, tipoinstalacion varchar(50));");
-            db.execSQL("create table if not exists reserva(fechaInicio timestamp, horaInicio int, horaFinal int, instalacion varchar, usuario varchar, foreign key(instalacion) references instalaciones(nombre), primary key(fechaInicio, horaInicio, instalacion), foreign key(usuario) references usuarios(usuario));");
+            db.execSQL("create table if not exists reserva(fechaInicio datetime, horaInicio int, horaFinal int, instalacion varchar, usuario varchar, foreign key(instalacion) references instalaciones(nombre), primary key(fechaInicio, horaInicio, instalacion), foreign key(usuario) references usuarios(usuario));");
 
         }catch (Exception e){
             Log.e("CreateDatabase", String.valueOf(e));
@@ -150,32 +152,39 @@ public class MainActivity extends AppCompatActivity {
 
     public void accederLogin(View view){
         //Obtenemos los datos del usuario y los comprobamos con la base de datos
-        String usuario = txtUsuarioLog.getText().toString();
+        String usuario = txtUsuarioLog.getText().toString().toLowerCase();
         String contra = txtContraLog.getText().toString();
-        Cursor cursor = db.rawQuery("SELECT * FROM usuarios;", null);
-        while(cursor.moveToNext()){
-            String usur = cursor.getString(0);
-            if(usur.equals(usuario)){
-                Cursor cursor1 = db.rawQuery("SELECT * FROM usuarios where usuario='"+usuario+"'", null);
-                while(cursor1.moveToNext()){
-                    String contr = cursor1.getString(1);
-                    if(contr.equals(contra)){
-                        //Entrar a panel de control, poner en Oncreate que si logueado = true inicie siempre el activity de reservas
-                        Toast.makeText(getApplicationContext(), "Inicio de sesion correcto", Toast.LENGTH_LONG).show();
-                        usuarioLogeado=true;
-                        SharedPreferences.Editor editor = preferences.edit();
-                        editor.putString("user", usuario);
-                        editor.commit();
-                        Intent intent = new Intent(getApplicationContext(), Reservas.class);
-                        startActivity(intent);
+        try{
+            Cursor cursor = db.rawQuery("SELECT * FROM usuarios where usuario='"+usuario+"'", null);
+            if(cursor.getCount()>0){
+                while(cursor.moveToNext()){
+                    String usur = cursor.getString(0).toLowerCase();
+                    if(usur.equals(usuario)){
+                        Cursor cursor1 = db.rawQuery("SELECT * FROM usuarios where usuario='"+usuario+"'", null);
+                        while(cursor1.moveToNext()){
+                            String contr = cursor1.getString(1);
+                            if(contr.equals(contra)){
+                                //Entrar a panel de control, poner en Oncreate que si logueado = true inicie siempre el activity de reservas
+                                Toast.makeText(getApplicationContext(), "Inicio de sesion correcto", Toast.LENGTH_LONG).show();
+                                usuarioLogeado=true;
+                                SharedPreferences.Editor editor = preferences.edit();
+                                editor.putString("user", usuario);
+                                editor.commit();
+                                Intent intent = new Intent(getApplicationContext(), Reservas.class);
+                                startActivity(intent);
 
+                            }else{
+                                Toast.makeText(getApplicationContext(), "Usuario o contraseña incorrecta", Toast.LENGTH_LONG).show();
+                            }
+                        }
                     }else{
                         Toast.makeText(getApplicationContext(), "Usuario o contraseña incorrecta", Toast.LENGTH_LONG).show();
                     }
                 }
-            }else{
-                Toast.makeText(getApplicationContext(), "Usuario o contraseña incorrecta", Toast.LENGTH_LONG).show();
             }
+        }catch(Exception e){
+            Toast.makeText(getApplicationContext(), "Usuario o contraseña incorrecta", Toast.LENGTH_LONG).show();
         }
+
     }
 }

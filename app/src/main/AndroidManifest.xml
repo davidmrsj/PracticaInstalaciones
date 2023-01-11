@@ -70,6 +70,9 @@
             android:name=".Reservas"
             android:exported="false" />
         <activity
+            android:name=".FichaReserva"
+            android:exported="false" />
+        <activity
             android:name=".Registro"
             android:exported="false"
             android:label="@string/title_activity_login" />

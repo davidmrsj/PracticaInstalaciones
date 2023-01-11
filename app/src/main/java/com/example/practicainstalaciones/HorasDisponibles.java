@@ -1,11 +1,13 @@
 package com.example.practicainstalaciones;
 
 import static com.example.practicainstalaciones.MainActivity.db;
+import static com.example.practicainstalaciones.MainActivity.preferences;
 import static com.example.practicainstalaciones.R.id.listaHorasDisponibles;
 
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.annotation.SuppressLint;
+import android.content.Intent;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.util.Log;
@@ -17,7 +19,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class HorasDisponibles extends AppCompatActivity {
+public class HorasDisponibles extends ClaseMenu {
 
     ListView listaHoras;
     String[] horasOcupadas;
@@ -34,6 +36,15 @@ public class HorasDisponibles extends AppCompatActivity {
         setHorasOcupadas();
         mostrarHorasDisponibles();
     }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        String user = preferences.getString("user", "");
+        if(user==""){
+            Intent intent = new Intent(getApplicationContext(), MainActivity.class);
+            startActivity(intent);
+        }    }
 
     public void getDataIntent(){
         Bundle bundle = this.getIntent().getExtras();

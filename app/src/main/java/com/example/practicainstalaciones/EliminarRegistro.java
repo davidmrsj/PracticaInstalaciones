@@ -4,6 +4,7 @@ import static com.example.practicainstalaciones.MainActivity.preferences;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.Intent;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.util.Log;
@@ -17,7 +18,7 @@ import com.example.practicainstalaciones.MainActivity;
 import java.util.ArrayList;
 import java.util.List;
 
-public class EliminarRegistro extends AppCompatActivity {
+public class EliminarRegistro extends ClaseMenu {
 
     Spinner registrosSpin;
     int idRes;
@@ -28,6 +29,16 @@ public class EliminarRegistro extends AppCompatActivity {
         setContentView(R.layout.activity_eliminar_registro);
         registrosSpin = (Spinner) findViewById(R.id.spinner);
         mostrarReg();
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        String user = preferences.getString("user", "");
+        if(user==""){
+            Intent intent = new Intent(getApplicationContext(), MainActivity.class);
+            startActivity(intent);
+        }
     }
 
     public void mostrarReg(){

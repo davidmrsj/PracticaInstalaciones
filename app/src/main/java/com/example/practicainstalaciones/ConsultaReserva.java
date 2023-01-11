@@ -2,19 +2,26 @@ package com.example.practicainstalaciones;
 
 import static com.example.practicainstalaciones.MainActivity.preferences;
 
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.Intent;
 import android.database.Cursor;
+import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.Log;
+import android.view.Gravity;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.FrameLayout;
+import android.widget.ImageView;
 import android.widget.ListView;
 
 import java.util.ArrayList;
 
-public class ConsultaReserva extends AppCompatActivity implements AdapterView.OnItemClickListener {
+public class ConsultaReserva extends ClaseMenu implements AdapterView.OnItemClickListener {
 
     Reserva reserva;
     ArrayList<Reserva> lista;
@@ -26,6 +33,16 @@ public class ConsultaReserva extends AppCompatActivity implements AdapterView.On
         listaReserva = (ListView) findViewById(R.id.listaConsulta);
         listar();
         listaReserva.setOnItemClickListener(this);
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        String user = preferences.getString("user", "");
+        if(user==""){
+            Intent intent = new Intent(getApplicationContext(), MainActivity.class);
+            startActivity(intent);
+        }
     }
 
     public void listar(){
@@ -50,8 +67,15 @@ public class ConsultaReserva extends AppCompatActivity implements AdapterView.On
         listaReserva.setAdapter(adapter);
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.M)
     @Override
     public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-
+        Reserva reserva = (Reserva) adapterView.getItemAtPosition(i);
+        Log.e("Consulta", reserva.toString());
+        if(reserva.getInstalacion()!="No hay registros"){
+            Intent intent = new Intent(getApplicationContext(), FichaReserva.class);
+            intent.putExtra("Datos", reserva.toString());
+            startActivity(intent);
+        }
     }
 }

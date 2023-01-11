@@ -27,6 +27,9 @@ public class NotificationService extends BroadcastReceiver {
      */
     @Override
     public void onReceive(Context context, Intent intent) {
+        Bundle bundle= intent.getExtras();
+        String instalacion = bundle.getString("Instalacion");
+        String hora = bundle.getString("Hora");
         Log.e("Alarma", "Entra en NotificacionService");
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             CharSequence name = "Nombre del canal";
@@ -39,7 +42,7 @@ public class NotificationService extends BroadcastReceiver {
         }
         // Crea la notificación
         NotificationCompat.Builder builder = new NotificationCompat.Builder(context, CHANNEL_ID)
-                .setSmallIcon(R.drawable.common_google_signin_btn_text_light_normal)
+                .setSmallIcon(R.mipmap.ic_launcher)
                 .setContentTitle("Quedan 15 minutos para tu reserva")
                 .setContentText("Tu reserva esta apunto de empezar")
                 .setPriority(NotificationCompat.PRIORITY_DEFAULT);

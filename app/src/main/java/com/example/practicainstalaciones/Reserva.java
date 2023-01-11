@@ -57,6 +57,6 @@ public class Reserva {
 
     @Override
     public String toString() {
-        return "Instalacion: " + instalacion + "+ fechaReserva: " + fechaReserva+" horas: "+horaInicio+"-"+horaFinal;
+        return "Instalacion: " + instalacion + "\n fechaReserva: " + fechaReserva+" horas: "+horaInicio+"-"+horaFinal;
     }
 }

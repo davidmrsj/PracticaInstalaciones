@@ -2,9 +2,9 @@
 <resources>
     <color name="purple_200">#FFBB86FC</color>
     <!-- Color primario rosa pastel -->
-    <color name="colorPrimary">#FFC0CB</color>
+    <color name="colorPrimary">#87CEFA</color>
     <!-- Color secundario azul cielo -->
-    <color name="colorSecondary">#87CEEB</color>
+    <color name="colorSecondary">#F5DEB3</color>
     <!-- Color terciario amarillo pálido -->
     <color name="colorTertiary">#FFFFE0</color>
 

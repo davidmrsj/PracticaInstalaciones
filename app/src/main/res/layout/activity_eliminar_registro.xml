@@ -8,8 +8,8 @@
 
     <Spinner
         android:id="@+id/spinner"
-        android:layout_width="256dp"
-        android:layout_height="42dp"
+        android:layout_width="312dp"
+        android:layout_height="50dp"
         android:layout_marginTop="68dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.5"
@@ -22,7 +22,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="52dp"
         android:onClick="eliminarReg"
-        android:text="Eliminar"
+        android:text="Cancelar reserva"
         app:layout_constraintEnd_toEndOf="@+id/spinner"
         app:layout_constraintHorizontal_bias="0.493"
         app:layout_constraintStart_toStartOf="@+id/spinner"

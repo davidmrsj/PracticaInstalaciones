@@ -1,5 +1,6 @@
 package com.example.practicainstalaciones;
 
+
 import static com.example.practicainstalaciones.MainActivity.db;
 import static com.example.practicainstalaciones.MainActivity.preferences;
 
@@ -32,7 +33,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
 
-public class AnadirReserva extends AppCompatActivity implements AdapterView.OnItemSelectedListener {
+public class AnadirReserva extends ClaseMenu implements AdapterView.OnItemSelectedListener {
 
     Button btnFecha;
     Button btnHora;
@@ -66,7 +67,7 @@ public class AnadirReserva extends AppCompatActivity implements AdapterView.OnIt
         hora = calendario.get(Calendar.HOUR_OF_DAY);
         minuto = calendario.get(Calendar.MINUTE);
         car = Calendar.getInstance();
-        fecha=ano+"-"+mes+"-"+dia;
+        fecha=ano+"-"+(mes+1)+"-"+dia;
 
         spinnerTipo.setOnItemSelectedListener(this);
         spinnerHoraInicio.setOnItemSelectedListener(this);
@@ -76,12 +77,22 @@ public class AnadirReserva extends AppCompatActivity implements AdapterView.OnIt
 
     }
 
+    @Override
+    protected void onStart() {
+        super.onStart();
+        String user = preferences.getString("user", "");
+        if(user==""){
+            Intent intent = new Intent(getApplicationContext(), MainActivity.class);
+            startActivity(intent);
+        }
+    }
+
     public void recogerFecha(View view){
         Calendar cal = Calendar.getInstance();
         DatePickerDialog datePickerDialog = new DatePickerDialog(this, new DatePickerDialog.OnDateSetListener() {
             @Override
             public void onDateSet(DatePicker view, int year, int month, int dayOfMonth) {
-                fecha = year+"-"+month+"-"+dayOfMonth;
+                fecha = year+"-"+(month+1)+"-"+dayOfMonth;
                 car.set(Calendar.YEAR, year);
                 car.set(Calendar.MONTH, month);
                 car.set(Calendar.DAY_OF_MONTH, dayOfMonth);
@@ -192,12 +203,6 @@ public class AnadirReserva extends AppCompatActivity implements AdapterView.OnIt
     }
 
     private void setAlarm() {
-//        AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
-//
-//        Intent intent = new Intent(this, NotificationService.class);
-//        PendingIntent pendingIntent = PendingIntent.getService(this, (int) System.currentTimeMillis(), intent, 0);
-//
-//        alarmManager.setExact(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), pendingIntent);
 
         AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
         Intent intent = new Intent(this, NotificationService.class);
@@ -205,12 +210,17 @@ public class AnadirReserva extends AppCompatActivity implements AdapterView.OnIt
         intent.putExtra("Hora", spinnerHoraInicio.getSelectedItem().toString());
         PendingIntent pendingIntent = PendingIntent.getBroadcast(this, (int)System.currentTimeMillis(), intent, PendingIntent.FLAG_IMMUTABLE);
 
-        car.add(Calendar.HOUR_OF_DAY, Integer.parseInt(spinnerHoraInicio.getSelectedItem().toString()));
-        Calendar fechaNotificacion = Calendar.getInstance();
-        fechaNotificacion.setTimeInMillis(car.getTimeInMillis() - 15 * 60 * 1000);
-        long triggerTime = fechaNotificacion.getTimeInMillis();
+        Calendar calendar = Calendar.getInstance();
 
-        alarmManager.setExact(AlarmManager.RTC_WAKEUP, triggerTime, pendingIntent);
+        calendar.set(Calendar.YEAR, ano);
+        calendar.set(Calendar.MONTH, mes);
+        calendar.set(Calendar.DAY_OF_MONTH, dia);
+
+        calendar.set(Calendar.HOUR_OF_DAY, Integer.parseInt(spinnerHoraInicio.getSelectedItem().toString()));
+        calendar.set(Calendar.MINUTE, 0);
+        calendar.add(Calendar.MINUTE, -15);
+
+        alarmManager.setExact(AlarmManager.RTC_WAKEUP, calendar.getTimeInMillis(), pendingIntent);
         Log.e("Alarma", "Da tiempo a la alarma");
     }
 
